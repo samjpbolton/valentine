@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Valentine's 💖</title>
+
+    <!-- Romantic font -->
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #ffe6ee;
+            font-family: Arial, sans-serif;
+        }
+
+           h1 {
+            margin-bottom: 20px;
+            color: #ff4d6d;
+            font-family: 'Great Vibes', cursive;
+            font-size: 52px;
+            font-weight: bold;
+        }
+
+        img {
+            max-width: 300px;
+            margin-bottom: 30px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 20px;
+        }
+
+        button {
+            width: 160px;            
+            padding: 12px 0;
+            font-size: 18px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            position: relative;
+        }
+
+        .yes {
+            background-color: #ff4d6d;
+            color: white;
+            z-index: 10;
+        }
+
+        .no {
+            background-color: #cccccc;
+            z-index: 1;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        /* --- Fullscreen intro overlay --- */
+        #introOverlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: #ffe6ee;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+
+            opacity: 1;
+            transition: opacity 450ms ease;
+        }
+
+        /* When we "enter", fade it out */
+        #introOverlay.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .intro-content {
+            position: relative;
+            text-align: center;
+        }
+
+        /* ✅ This is the "make gif smaller" bit */
+        .intro-content img {
+            width: min(520px, 70vw);   /* caps size */
+            height: auto;
+            max-height: 60vh;          /* prevents tall overflow */
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+        }
+
+        /* Text over the gif */
+        .intro-text {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Great Vibes', cursive;
+            font-size: 64px;
+            color: #ff4d6d;
+            pointer-events: none;
+            text-shadow: 0 4px 12px rgba(0,0,0,0.2);
+
+        }
+
+        .intro-sub {
+            margin-top: 16px;
+            font-size: 16px;
+            opacity: 0.7;
+
+            /* ✅ slight bounce */
+            animation: bounce 1.2s ease-in-out infinite;
+        }
+
+        /* Bounce keyframes */
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        /* Optional: hide page scroll while overlay is up */
+        body.no-scroll {
+            overflow: hidden;
+        }
+
+        /* --- Fade-in helpers --- */
+        .fade-hidden {
+            opacity: 0;
+        }
+
+        .fade-in {
+            opacity: 1;
+            transition: opacity 600ms ease;
+        }
+
+        /* --- Yes overlay (hidden until Yes clicked) --- */
+        #yesOverlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9998;            /* below intro (9999), above page */
+            background: #ffe6ee;
+            display: none;            /* hidden by default */
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+
+            opacity: 1;
+            transition: opacity 450ms ease;
+        }
+
+        #yesOverlay.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Simple content */
+        .yes-content {
+            text-align: center;
+        }
+
+        .yes-content img {
+            width: min(650px, 70vw);
+            height: auto;
+            max-height: 60vh;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+        }
+
+        .yes-message {
+            margin-top: 18px;
+            font-family: 'Great Vibes', cursive;
+            font-size: 64px;
+            color: #ff4d6d;
+        }
+    </style>
+</head>
+<body class="no-scroll">
+
+    <div id="introOverlay" onclick="enterSite()">
+        <div class="intro-content">
+            <div class="intro-sub">To my dearest Nicky...</div>
+            <img src="minionloves.gif" alt="Intro GIF">
+        </div>
+    </div>
+
+    <div id="yesOverlay" onclick="closeYesOverlay()">
+        <div class="yes-content">
+            <img src="vm.jpg" alt="cat">
+            <div class="yes-message">Love you ❤️</div>
+        </div>
+    </div>
+
+    <h1 id="helloText" class="fade-hidden">Hello...</h1>
+
+    <img id="mainImage" src="sv.png" alt="Valentine me" class="fade-hidden">
+
+    <div class="buttons fade-hidden" id="mainButtons">
+        <button id="yesBtn" class="yes" onclick="yesClicked()">Yes</button>
+        <button id="noBtn" class="no" onclick="noClicked()">No</button>
+    </div>
+
+    <script>
+        let yesScale = 1;
+
+        function enterSite() {
+            const overlay = document.getElementById("introOverlay");
+
+            if (overlay.classList.contains("fade-out")) return;
+
+            overlay.classList.add("fade-out");
+            document.body.classList.remove("no-scroll");
+
+            setTimeout(() => {
+                overlay.style.display = "none";
+
+                // Step 1: fade in "Hello..."
+                const hello = document.getElementById("helloText");
+                hello.classList.add("fade-in");
+
+                // Step 2: fade in rest after a short delay
+                setTimeout(() => {
+                    document.getElementById("mainImage").classList.add("fade-in");
+                    document.getElementById("mainButtons").classList.add("fade-in");
+                }, 1600);
+
+            }, 450); // matches overlay fade-out
+        }
+
+        // ✅ Auto-enter after ~2.5 seconds (optional)
+        setTimeout(() => {
+            enterSite();
+        }, 15000);
+
+        function yesClicked() {
+            openYesOverlay();
+        }
+
+        function openYesOverlay() {
+            const overlay = document.getElementById("yesOverlay");
+            overlay.classList.remove("fade-out");
+            overlay.style.display = "flex";
+            document.body.classList.add("no-scroll");
+        }
+
+        function closeYesOverlay() {
+            const overlay = document.getElementById("yesOverlay");
+
+            if (overlay.classList.contains("fade-out")) return;
+
+            overlay.classList.add("fade-out");
+            document.body.classList.remove("no-scroll");
+
+            setTimeout(() => {
+                overlay.style.display = "none";
+            }, 450);
+        }
+
+        function noClicked() {
+            const yesBtn = document.getElementById("yesBtn");
+            const noBtn = document.getElementById("noBtn");
+
+            yesScale += 0.2; // grow slightly each time
+            yesBtn.style.transform = `scale(${yesScale})`;
+
+            noBtn.textContent = "Try again";
+        }
+    </script>
+
+</body>
+</html>
